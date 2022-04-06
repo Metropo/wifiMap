@@ -78,6 +78,8 @@ if(!$useDummyData)
     */
 
     $logout_results = $unifidata->logout();
+ 
+    echo json_encode($data);
 }
 else
 {
@@ -85,6 +87,4 @@ else
     	echo file_get_contents('list_clients.json');
     elseif ($action == 'list_devices')
     	echo file_get_contents('list_devices.json');
-    else
-    	echo json_encode($data);
 }
