@@ -36,6 +36,9 @@ var map, 			//Mapa
 customCircleMarker = L.CircleMarker.extend({
 	options: { 
 	   custom_data: 'Custom data!',
+	   distance: 'distance from AP',
+	   angle: 'rotation angle around AP',
+	   apLocation: 'location of AP'
 	}
  });
 /**
@@ -71,7 +74,7 @@ function start(divMapa, divControls, formInputCerca, formBotoRecarregar, formChe
 	var interval = setInterval(function(){carregarDades();	;}, AUTO_ACTUALITZACIO * 1000);
 	
 	//Arranquem moviment rotacio clients
-	var interval = setInterval(function(){moureUsuaris(usuaris, map);}, 1 /FPS * 1000);
+	var interval = setInterval(function(){moveUsers(usuaris, map);}, 1 /FPS * 1000);
 
 	carregarDades(); //Cridem un primer cop a carregar dades
 }
@@ -289,10 +292,14 @@ function afegirUsuaris(objUsuaris, APs, map){
 
 		//var marker = L.marker(latLngUsuari).addTo(map);
 		//marker.bindPopup(usuari.hostname).openPopup();#
-		var marker = L.popup({"closeButton": false, "autoClose": false, "closeOnClick": null})
+		var marker = L.popup({"closeButton": false, "autoClose": false, "closeOnClick": null, "autoPan": false})
     .setLatLng(latLngUsuari)
-    .setContent(usuari.hostname)
+    .setContent(etiqueta)
     .openOn(map);
+	marker.custom_data = usuari;
+	marker.distance = distancia;
+	marker.angle = angle;
+	marker.apLocation = latLngAP;
 	//marker.closeButton = false;
 	//marker.autoClose = false;
 
@@ -364,46 +371,46 @@ function afegirUsuaris(objUsuaris, APs, map){
  * @param {Array} Users 
  * @param {google map object} the map
  */
-function moureUsuaris(usuaris, map){
-	return
+function moveUsers(users, map){
+
 	//Si s'ha fet algun cerca...
 	var cadenaCerca = inputCerca.value.toLowerCase();
 	
-	for (var i = 0; i < usuaris.length; i++){
+	for (var i = 0; i < users.length; i++){
 		var mostrar = false;
-		var usuari = usuaris[i];
+		var user = users[i];
 		
 		if (cadenaCerca == "") mostrar = true; //Si no estem cercant res -> el marquem per mostrar
-		else{ //Si estem cercant -> el cerquem a totes les cadenes d'informació (nostname, usuari radius, SSID, xarxa, fabricant telefon...)
-			var usuariRadius = (usuari.dades.hasOwnProperty('1x_identity') && usuari.dades['1x_identity'].toLowerCase().indexOf(cadenaCerca) >-1);
-			var nomUnifi = (usuari.dades.hasOwnProperty('name') && usuari.dades['name'].toLowerCase().indexOf(cadenaCerca) >-1);
-			var essid = usuari.dades.essid.toLowerCase().indexOf(cadenaCerca)>-1;
-			var hostname = usuari.dades.hostname.toLowerCase().indexOf(cadenaCerca)>-1 ;
-			var ip = usuari.dades.ip.toLowerCase().indexOf(cadenaCerca)>-1;
-			var mac = usuari.dades.mac.toLowerCase().indexOf(cadenaCerca)>-1;
-			var oui = usuari.dades.oui.toLowerCase().indexOf(cadenaCerca)>-1;
-			var noteUnifi = (usuari.dades.hasOwnProperty('note') && usuari.dades['note'].toLowerCase().indexOf(cadenaCerca) >-1);
-			if (usuariRadius || nomUnifi || essid || hostname || ip || mac || oui || noteUnifi) mostrar = true;
+		else{ //Si estem cercant -> el cerquem a totes les cadenes d'informació (nostname, user radius, SSID, xarxa, fabricant telefon...)
+			var userRadius = (user.custom_data.hasOwnProperty('1x_identity') && user.custom_data['1x_identity'].toLowerCase().indexOf(cadenaCerca) >-1);
+			var nomUnifi = (user.custom_data.hasOwnProperty('name') && user.custom_data['name'].toLowerCase().indexOf(cadenaCerca) >-1);
+			var essid = user.custom_data.essid.toLowerCase().indexOf(cadenaCerca)>-1;
+			var hostname = user.custom_data.hostname.toLowerCase().indexOf(cadenaCerca)>-1 ;
+			var ip = user.custom_data.ip.toLowerCase().indexOf(cadenaCerca)>-1;
+			var mac = user.custom_data.mac.toLowerCase().indexOf(cadenaCerca)>-1;
+			var oui = user.custom_data.oui.toLowerCase().indexOf(cadenaCerca)>-1;
+			var noteUnifi = (user.custom_data.hasOwnProperty('note') && user.custom_data['note'].toLowerCase().indexOf(cadenaCerca) >-1);
+			if (userRadius || nomUnifi || essid || hostname || ip || mac || oui || noteUnifi) mostrar = true;
 		}
 	
-		//usuari.txtOverlay.setMap(null); //amaguem etiqueta
+		//user.txtOverlay.setMap(null); //amaguem etiqueta
 		if (mostrar){
-			//Calculem angle per afegir a la rotació del usuari en funcio de la cobertura (com mes cobertura mes velocitat)
-			usuari.angle = ((RPM/(-usuari.dades.signal/20))/60 * 2 * Math.PI)/FPS + usuari.angle;
-			var novaLatLngUsuari = calculPosicioUsuari(usuari.posicioAP.lat(), usuari.posicioAP.lng(), usuari.distancia, usuari.angle);
-			usuari.setPosition( novaLatLngUsuari );
+			//Calculem angle per afegir a la rotació del user en funcio de la cobertura (com mes cobertura mes velocitat)
+			user.angle = ((RPM/(-user.custom_data.signal/20))/60 * 2 * Math.PI)/FPS + user.angle;
+			var newLatLngUser = calculPosicioUsuari(user.apLocation[0], user.apLocation[1], user.distance, user.angle);
+			user.setLatLng( newLatLngUser );
 			if (checkboxEtiquetes.checked){ // Si s'ha de mostrar l'etiqueta, l'actualitzem a la posicio i la mostrem
-				usuari.txtOverlay.moure(novaLatLngUsuari);
-				usuari.txtOverlay.show();
+			//	user.txtOverlay.moure(newLatLngUser);
+			//	user.txtOverlay.show();
 			}
 			else
-				usuari.txtOverlay.hide();
-			usuari.setVisible(true);
+			user.txtOverlay.hide();
+			//user.setVisible(true);
 				
 		}
 		else{
-			usuari.setVisible(false);
-			usuari.txtOverlay.hide();
+			user.setVisible(false);
+			//user.txtOverlay.hide();
 		}
 	
 	}
