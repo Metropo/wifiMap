@@ -18,6 +18,13 @@ $data           = '';
 
 
 include('../config.php');
+
+/*
+load the Unifi API connection class and log in to the controller
+- if an error occurs during the login process, an alert is displayed on the page
+*/
+require('class.unifi.php');
+
 header('Content-Type: application/json; charset=utf-8');
 if (isset($_GET['action'])) {
     $action = $_GET['action'];
@@ -27,11 +34,7 @@ if (isset($_GET['action'])) {
 
 if(!$useDummyData)
 {
-    /*
-    load the Unifi API connection class and log in to the controller
-    - if an error occurs during the login process, an alert is displayed on the page
-    */
-    require('class.unifi.php');
+
 
     $unifidata        = new unifiapi($controlleruser, $controllerpassword, $controllerurl, $site_id, $controllerversion);
     $unifidata->debug = false;
