@@ -1,3 +1,6 @@
+<?php
+include("config.php");
+?>
 <!DOCTYPE html>
 <html>
     <head>
@@ -30,7 +33,7 @@
         <div id="map"></div>
         <script>
         
-            var map = L.map('map').setView([45, -16], 10);
+            var map = L.map('map').setView([<?php echo($mapStartPoint["lat"] . ", " . $mapStartPoint["long"]); ?>], <?php echo($mapZoomLevel); ?>);
         
             var tiles = L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw', {
                 maxZoom: 20,
