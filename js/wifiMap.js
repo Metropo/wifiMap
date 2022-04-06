@@ -33,7 +33,11 @@ var map, 			//Mapa
 	usuaris = [],	//Array de usuaris
 	inputCerca, checkboxAP, checkboxEtiquetes, botoRecarregar; //Interficie afegida al mapa
 	
-
+customCircleMarker = L.CircleMarker.extend({
+	options: { 
+	   custom_data: 'Custom data!',
+	}
+ });
 /**
  * Start everything
  * @param {div DOM object} Div containter for google map
@@ -48,7 +52,7 @@ function start(divMapa, divControls, formInputCerca, formBotoRecarregar, formChe
 	checkboxAP = formCheckboxAP;
 	checkboxEtiquetes = formCheckboxEtiquetes
 	botoRecarregar = formBotoRecarregar;
-	map = initMap(divMapa, divControls);
+	map = divMapa; initMap(divMapa, divControls);
 		
 	//Afegeix event al checkbox de mostrar APs
 	checkboxAP.addEventListener('change', function(event) {
@@ -79,25 +83,25 @@ function start(divMapa, divControls, formInputCerca, formBotoRecarregar, formChe
  * @return {google map object} Map
  */
 function initMap(divMapa, divControls) {
-	var opcionsMapa = {
-			zoom: ZOOM_INICIAL,			
-			center: LAT_LON_INICAL,
-			scaleControl: true,
-			panControl:true,
-			zoomControl:true,
-			mapTypeControl:true,
-			streetViewControl:true,
-			overviewMapControl:true,
-			rotateControl:true
-	};
-	map = new google.maps.Map(divMapa, opcionsMapa);
-	// Create the search box and link it to the UI element.
-	var searchBox = new google.maps.places.SearchBox(inputCerca);
-	map.controls[google.maps.ControlPosition.TOP_LEFT].push(inputCerca);
-	// Afegir controls al mapa
-	divControls.index = 1;
-	map.controls[google.maps.ControlPosition.TOP_CENTER].push(divControls);
-	return map;
+	//var opcionsMapa = {
+	//		zoom: ZOOM_INICIAL,			
+	//		center: LAT_LON_INICAL,
+	//		scaleControl: true,
+	//		panControl:true,
+	//		zoomControl:true,
+	//		mapTypeControl:true,
+	//		streetViewControl:true,
+	//		overviewMapControl:true,
+	//		rotateControl:true
+	//};
+	//map = new google.maps.Map(divMapa, opcionsMapa);
+	//// Create the search box and link it to the UI element.
+	//var searchBox = new google.maps.places.SearchBox(inputCerca);
+	//map.controls[google.maps.ControlPosition.TOP_LEFT].push(inputCerca);
+	//// Afegir controls al mapa
+	//divControls.index = 1;
+	//map.controls[google.maps.ControlPosition.TOP_CENTER].push(divControls);
+	//return map;
 }
 
 /**
@@ -126,32 +130,40 @@ function carregarDades(){
  */
 function afegirAPs(objAPs, map){
 	var markers = [];
-	var imgAPon={
-		url: 'images/ap_on.png',
-		anchor: new google.maps.Point(10,10)
-	};
-	var imgAPoff={
-		url: 'images/ap_off.png',
-		anchor: new google.maps.Point(10,10)
-	};
+	//var imgAPon={
+	//	url: 'images/ap_on.png',
+	//	anchor: new google.maps.Point(10,10)
+	//};
+	//var imgAPoff={
+	//	url: 'images/ap_off.png',
+	//	anchor: new google.maps.Point(10,10)
+	//};
 
 	for (var i = 0; i < objAPs.length; i++){
 		
 		var ap = objAPs[i], imgAP;
 		if (ap.type != "uap") continue; // Si no es un AP no el pintem
-		if (ap.state != 1) imgAP = imgAPoff; else imgAP = imgAPon; //Si el AP no esta actiu -> imatge vermella
-		var latlng = new google.maps.LatLng(ap.x, ap.y);
-		var txt = new TxtOverlay(latlng, ap.name, "etiquetaAP", map)
-		var marker = new google.maps.Marker({
-			position: {lat: ap.x, lng: ap.y},
-			map: map,
-			dades: ap, //Desem tota la informació de l'AP al mateix marker
-			txtOverlay: txt, //Desem objecte txtOverlay (etiqueta)
-			//animation: google.maps.Animation.DROP,
-			icon: imgAP,
-			title: ap.name + ", usuaris: " + ap.num_sta 
-		});
-		marker.setZIndex(1);
+		//if (ap.state != 1) imgAP = imgAPoff; else imgAP = imgAPon; //Si el AP no esta actiu -> imatge vermella
+		//var latlng = new google.maps.LatLng(ap.x, ap.y);
+		//var txt = new TxtOverlay(latlng, ap.name, "etiquetaAP", map)
+		console.log("UAP: " + ap.name + map);
+		var marker = L.marker([ap.x, ap.y]).addTo(map);
+		marker.custom_data = ap;
+		marker.bindPopup(ap.name + ", Users: " + ap.num_sta).openPopup();
+		//var marker = L.popup()
+		//	.setLatLng([ap.x, ap.y])
+		//	.setContent(ap.name + ", usuaris: " + ap.num_sta)
+		//	.openOn(map);
+		//	// new google.maps.Marker({
+		//	//position: {lat: ap.x, lng: ap.y},
+		//	//map: map,
+		//	//dades: ap, //Desem tota la informació de l'AP al mateix marker
+		//	//txtOverlay: txt, //Desem objecte txtOverlay (etiqueta)
+		//	////animation: google.maps.Animation.DROP,
+		//	//icon: imgAP,
+		//	//title: ap.name + ", usuaris: " + ap.num_sta 
+		//    //});
+		//marker.setZIndex(1);
 		var imgAPFinestra = 'images/ap_on.png';
 		if (ap.state != 1) { 
 			imgAPFinestra = 'images/ap_off.png'; 
@@ -185,19 +197,19 @@ function afegirAPs(objAPs, map){
 						  '</div>';
 		}
 		//Contingut de la finestra d'informació
-		var infowindow = new google.maps.InfoWindow()
+		//var infowindow = new google.maps.InfoWindow()
 
-		google.maps.event.addListener(marker,'click', (function(marker,content,infowindow){ 
-			return function() {
-				if(isInfoWindowOpen(infowindow))
-					infowindow.close();
-				else{
-					infowindow.setContent(content);
-					infowindow.setZIndex(5);
-					infowindow.open(map,marker);
-				}
-			};
-		})(marker,content,infowindow)); 	
+		//google.maps.event.addListener(marker,'click', (function(marker,content,infowindow){ 
+		//	return function() {
+		//		if(isInfoWindowOpen(infowindow))
+		//			infowindow.close();
+		//		else{
+		//			infowindow.setContent(content);
+		//			infowindow.setZIndex(5);
+		//			infowindow.open(map,marker);
+		//		}
+		//	};
+		//})(marker,content,infowindow)); 	
 		markers.push(marker);
 	}
 	return markers;
@@ -212,17 +224,17 @@ function afegirAPs(objAPs, map){
  * @param {Boolean} Indicates if AP label must be showed in the map.
   */
 function repintarAPs(APs, map, mostrarAP, mostrarEtiquetes){
-	for (var i = 0; i < APs.length; i++){
-		if(mostrarAP) {
-			APs[i].setVisible(true); //mostrem marker
-			if (mostrarEtiquetes) APs[i].txtOverlay.setMap(map); //mostrem etiqueta
-			else APs[i].txtOverlay.setMap(null); //amaguem etiqueta
-		}
-		else {
-			APs[i].setVisible(false);	//amaguem marker
-			APs[i].txtOverlay.setMap(null); //amaguem etiqueta
-		}
-	}	
+	//for (var i = 0; i < APs.length; i++){
+	//	if(mostrarAP) {
+	//		APs[i].setVisible(true); //mostrem marker
+	//		if (mostrarEtiquetes) APs[i].txtOverlay.setMap(map); //mostrem etiqueta
+	//		else APs[i].txtOverlay.setMap(null); //amaguem etiqueta
+	//	}
+	//	else {
+	//		APs[i].setVisible(false);	//amaguem marker
+	//		APs[i].txtOverlay.setMap(null); //amaguem etiqueta
+	//	}
+	//}	
 }
 
 /**
@@ -234,34 +246,34 @@ function repintarAPs(APs, map, mostrarAP, mostrarEtiquetes){
  */
 function afegirUsuaris(objUsuaris, APs, map){
 	var markers = [];
-	var imgUsuari1={
-		url: 'images/usuari1.png',
-		//size: new google.maps.Size(80, 80),
-		//origin: new google.maps.Point(30,30),
-		anchor: new google.maps.Point(0,1)//(47,1)
-	};
-	var imgUsuari2={
-		url: 'images/usuari2.png',
-		//size: new google.maps.Size(80, 80),
-		//origin: new google.maps.Point(30,30),
-		anchor: new google.maps.Point(0,1)//(47,1)
-	};
-	var imgUsuariNoAutenticat={
-		url: 'images/usuariNoAutenticat.png',
-		//size: new google.maps.Size(80, 80),
-		//origin: new google.maps.Point(30,30),
-		anchor: new google.maps.Point(0,1)//(47,1)
-	};
+	//var imgUsuari1={
+	//	url: 'images/usuari1.png',
+	//	//size: new google.maps.Size(80, 80),
+	//	//origin: new google.maps.Point(30,30),
+	//	anchor: new google.maps.Point(0,1)//(47,1)
+	//};
+	//var imgUsuari2={
+	//	url: 'images/usuari2.png',
+	//	//size: new google.maps.Size(80, 80),
+	//	//origin: new google.maps.Point(30,30),
+	//	anchor: new google.maps.Point(0,1)//(47,1)
+	//};
+	//var imgUsuariNoAutenticat={
+	//	url: 'images/usuariNoAutenticat.png',
+	//	//size: new google.maps.Size(80, 80),
+	//	//origin: new google.maps.Point(30,30),
+	//	anchor: new google.maps.Point(0,1)//(47,1)
+	//};
 	for (var i = 0; i < objUsuaris.length; i++){
 		var usuari = objUsuaris[i];
-		var imatge = imgUsuari1;
-		if (usuari.hasOwnProperty('note') && usuari['note'].toLowerCase().indexOf(NOTA_USUARIS_DIFERENTS) >-1) imatge = imgUsuari2; // Si s'ha de pintar de color diferent...
-		if (usuari.hasOwnProperty('authorized') && usuari['authorized'] == false ) imatge = imgUsuariNoAutenticat; // Si s'ha de pintar de color diferent...
+		//var imatge = imgUsuari1;
+		//if (usuari.hasOwnProperty('note') && usuari['note'].toLowerCase().indexOf(NOTA_USUARIS_DIFERENTS) >-1) imatge = imgUsuari2; // Si s'ha de pintar de color diferent...
+		//if (usuari.hasOwnProperty('authorized') && usuari['authorized'] == false ) imatge = imgUsuariNoAutenticat; // Si s'ha de pintar de color diferent...
 		var AP = cercarAPUsuari(APs,usuari.ap_mac); //Cerquem el ap del usuari
 		var distancia = -(usuari.signal ) * FACTOR_COBERTURA_DISTANCIA; //Distancia al AP proporcional a la cobertura
 		var angle = Math.random() * 2 * Math.PI;	//Creem angle aleatori en radiants
-		var latLngUsuari = calculPosicioUsuari(AP.dades.x, AP.dades.y, distancia, angle);
-		var latLngAP = new google.maps.LatLng(AP.dades.x, AP.dades.y);  //Desem posicio AP al mateix usuari per a tindre-ho mes a mà
+		var latLngUsuari = calculPosicioUsuari(AP.custom_data.x, AP.custom_data.y, distancia, angle);
+		var latLngAP = [AP.custom_data.x, AP.custom_data.y];  //Desem posicio AP al mateix usuari per a tindre-ho mes a mà
 		var etiqueta;
 		//Consultem si el usuari s'ha autenticat amb radius
 		if(usuari.hasOwnProperty('1x_identity') && usuari['1x_identity'] != "") etiqueta = (usuari['1x_identity']); //Si existeix usuari, l'afegim a l'etiqueta
@@ -273,27 +285,37 @@ function afegirUsuaris(objUsuaris, APs, map){
 		var etiquetaClass = "etiquetaUsuari";
 		if (usuari.tx_bytes > CONSUM_DADES_EXTREM || usuari.rx_bytes > CONSUM_DADES_EXTREM) etiquetaClass += " etiquetaUsuariConsumExtrem";
 		else if(usuari.tx_bytes > CONSUM_DADES_ALT || usuari.rx_bytes > CONSUM_DADES_ALT) etiquetaClass += " etiquetaUsuariConsumAlt";
-		var txt = new TxtOverlay(latLngUsuari, etiqueta, etiquetaClass, map)
-		var marker = new google.maps.Marker({
-			position: latLngUsuari,/*{lat: latUsuari, lng: lngUsuari},*/
-			map: map,
-			dades: usuari, 		//Desem tota la informació del usuari al mateix marker
-			txtOverlay: txt, 	//Desem objecte txtOverlay (etiqueta)
-			angle: angle, 		//Desem l'angle creat aleatoriament per poder moure posteriorment
-			distancia: distancia,//Desem la distancia calculada per poder moure posteriorment
-			posicioAP: latLngAP, //Desem posició AP al mateix usuari per a tindre-ho més a mà
-			//animation: google.maps.Animation.BOUNCE,
-			icon: imatge,
-			title: usuari.hostname
-		});
-		marker.setZIndex(3);
+		//var txt = new TxtOverlay(latLngUsuari, etiqueta, etiquetaClass, map)
+
+		//var marker = L.marker(latLngUsuari).addTo(map);
+		//marker.bindPopup(usuari.hostname).openPopup();#
+		var marker = L.popup({"closeButton": false, "autoClose": false, "closeOnClick": null})
+    .setLatLng(latLngUsuari)
+    .setContent(usuari.hostname)
+    .openOn(map);
+	//marker.closeButton = false;
+	//marker.autoClose = false;
+
+		//var marker = new google.maps.Marker({
+		//	position: latLngUsuari,/*{lat: latUsuari, lng: lngUsuari},*/
+		//	map: map,
+		//	dades: usuari, 		//Desem tota la informació del usuari al mateix marker
+		//	txtOverlay: txt, 	//Desem objecte txtOverlay (etiqueta)
+		//	angle: angle, 		//Desem l'angle creat aleatoriament per poder moure posteriorment
+		//	distancia: distancia,//Desem la distancia calculada per poder moure posteriorment
+		//	posicioAP: latLngAP, //Desem posició AP al mateix usuari per a tindre-ho més a mà
+		//	//animation: google.maps.Animation.BOUNCE,
+		//	icon: imatge,
+		//	title: usuari.hostname
+		//});
+		//marker.setZIndex(3);
 		if (usuari.hasOwnProperty('authorized') && usuari['authorized'] == false ) etiqueta += " (no autoritzat)";
 		var nomPersonalitzat = "";
 		if(usuari.hasOwnProperty('1x_identity')) nomPersonalitzat += '<li>Username: <b>' + usuari['1x_identity'] + '</b></li>';
 		if(usuari.hasOwnProperty('name') && usuari.name.trim() != "") nomPersonalitzat += '<li>Nom: <b>' + usuari['name'] + '</b></li>';
 		var content = '<div class="finestraPropietats">'+
 							'<h1 class="firstHeading">'+
-								'<img src="' + imatge.url + '"> ' + etiqueta +
+								//'<img src="' + imatge.url + '"> ' + etiqueta +
 							'</h1>'+
 							'<div>'+
 								'<p><ul>' + nomPersonalitzat +
@@ -301,7 +323,7 @@ function afegirUsuaris(objUsuaris, APs, map){
 									'<li>Dispositiu: <b>' + usuari.oui +' </b></li>'+
 									'<li>Ip: <b>' +  usuari.ip + '</b></li>'+
 									'<li>MAC: <b>' + usuari.mac + '</b></li>'+
-									'<li>AP: <b>' + AP.dades.name + '</b></li>'+
+									'<li>AP: <b>' + AP.custom_data.name + '</b></li>'+
 									'<li>SSID: <b>' + usuari.essid + '</b></li>'+
 									'<li>Canal: <b>' + usuari.channel + ' ('+ usuari['radio'] +')</b></li>'+
 									'<li>Senyal: <b>' + usuari.signal + 'dB '+ senyal2Qualitat(usuari.signal) +'%</b></li>'+
@@ -319,19 +341,19 @@ function afegirUsuaris(objUsuaris, APs, map){
 							'</div>'+
 					 '</div>';
 		
-		var infowindow = new google.maps.InfoWindow()
-
-		google.maps.event.addListener(marker,'click', (function(marker,content,infowindow){ 
-			return function() {
-				if(isInfoWindowOpen(infowindow))
-					infowindow.close();
-				else{
-					infowindow.setContent(content);
-					infowindow.setZIndex(10);
-					infowindow.open(map,marker);
-				}
-			};
-		})(marker,content,infowindow)); 
+		//var infowindow = new google.maps.InfoWindow()
+//
+		//google.maps.event.addListener(marker,'click', (function(marker,content,infowindow){ 
+		//	return function() {
+		//		if(isInfoWindowOpen(infowindow))
+		//			infowindow.close();
+		//		else{
+		//			infowindow.setContent(content);
+		//			infowindow.setZIndex(10);
+		//			infowindow.open(map,marker);
+		//		}
+		//	};
+		//})(marker,content,infowindow)); 
 		markers.push(marker);
 	}
 	return markers;
@@ -343,6 +365,7 @@ function afegirUsuaris(objUsuaris, APs, map){
  * @param {google map object} the map
  */
 function moureUsuaris(usuaris, map){
+	return
 	//Si s'ha fet algun cerca...
 	var cadenaCerca = inputCerca.value.toLowerCase();
 	
@@ -395,7 +418,7 @@ function moureUsuaris(usuaris, map){
  */
 function cercarAPUsuari(APs,mac){
 	for (var i = 0; i < APs.length; i++){
-		if (APs[i].dades.mac == mac)
+		if (APs[i].custom_data.mac == mac)
 			return APs[i];
 	}
 	return null;
@@ -423,8 +446,8 @@ function eliminarMarkers(arrayMarkers){
 function calculPosicioUsuari(x, y, distancia, angle){
 	var novaX = x + distancia * Math.cos(angle);
 	var novaY = y + distancia * Math.sin(angle);
-	var latLng = new google.maps.LatLng(novaX, novaY);
-	return (latLng);
+	//var latLng = new google.maps.LatLng(novaX, novaY);
+	return ([novaX, novaY]);
 }
 
 /**

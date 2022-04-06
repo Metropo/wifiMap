@@ -49,7 +49,7 @@ html, body {
 	width: 300px;
 }	
 
-#map { height: 100%; }
+#map { margin-top: 10px; height: calc(100% - 100px); }
 	  
 .etiquetaAP {
 	background: rgba(0,0,0, 0.3);
@@ -82,4 +82,14 @@ html, body {
 .finestraPropietats{
 	
 	
+}
+
+/* customize leaflet popups to create just small labels */
+
+.leaflet-popup-content {
+	margin: 3px 5px;
+}
+
+.leaflet-popup-tip-container {
+	visibility: hidden;
 }
