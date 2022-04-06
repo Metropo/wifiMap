@@ -93,3 +93,8 @@ html, body {
 .leaflet-popup-tip-container {
 	visibility: hidden;
 }
+.leaflet-popup-content-wrapper{
+    /*background-color: lightgray;*/
+    opacity: 0.8;
+	text-align: center;
+}
