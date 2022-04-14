@@ -38,7 +38,10 @@ customCircleMarker = L.CircleMarker.extend({
 	   custom_data: 'Custom data!',
 	   distance: 'distance from AP',
 	   angle: 'rotation angle around AP',
-	   apLocation: 'location of AP'
+	   apLocation: 'location of AP',
+	   showDetailText: 'long description',
+	   detailText: 'long description',
+	   normalText: 'long description',
 	}
  });
 /**
@@ -153,6 +156,7 @@ function afegirAPs(objAPs, map){
 		var marker = L.marker([ap.x, ap.y]).addTo(map);
 		marker.custom_data = ap;
 		marker.bindPopup(ap.name + ", Users: " + ap.num_sta).openPopup();
+
 		//var marker = L.popup()
 		//	.setLatLng([ap.x, ap.y])
 		//	.setContent(ap.name + ", usuaris: " + ap.num_sta)
@@ -296,10 +300,27 @@ function afegirUsuaris(objUsuaris, APs, map){
     .setLatLng(latLngUsuari)
     .setContent(etiqueta)
     .openOn(map);
+
+	var markerContent = L.DomUtil.create('div', 'content');
+	markerContent.innerHTML = etiqueta;
+    marker.setContent(markerContent);
+
+	L.DomEvent.addListener(markerContent, 'click', function(event){
+		console.log(event.originalTarget); 
+		var elem = event.originalTarget;
+		while (elem.className !== "content")
+		{
+			elem = elem.parentNode;
+		}
+		console.log(elem);
+		elem.childNodes[1].style.display = elem.childNodes[1].style.display === "none" ? "block" : "none"
+	}, marker);
+
 	marker.custom_data = usuari;
 	marker.distance = distancia;
 	marker.angle = angle;
 	marker.apLocation = latLngAP;
+	marker.bindTooltip("click");
 	//marker.closeButton = false;
 	//marker.autoClose = false;
 
@@ -320,12 +341,7 @@ function afegirUsuaris(objUsuaris, APs, map){
 		var nomPersonalitzat = "";
 		if(usuari.hasOwnProperty('1x_identity')) nomPersonalitzat += '<li>Username: <b>' + usuari['1x_identity'] + '</b></li>';
 		if(usuari.hasOwnProperty('name') && usuari.name.trim() != "") nomPersonalitzat += '<li>Nom: <b>' + usuari['name'] + '</b></li>';
-		var content = '<div class="finestraPropietats">'+
-							'<h1 class="firstHeading">'+
-								//'<img src="' + imatge.url + '"> ' + etiqueta +
-							'</h1>'+
-							'<div>'+
-								'<p><ul>' + nomPersonalitzat +
+		var content = etiqueta +	'<div class="toggleContent" style="display: none;"><ul>' + nomPersonalitzat +
 									'<li>Nom de host: <b>' + usuari.hostname + '</b></li>'+
 									'<li>Dispositiu: <b>' + usuari.oui +' </b></li>'+
 									'<li>Ip: <b>' +  usuari.ip + '</b></li>'+
@@ -338,15 +354,15 @@ function afegirUsuaris(objUsuaris, APs, map){
 									'<li>Connexi&oacute; actual: <b>' + humanMillis(usuari.assoc_time) + '</b></li>'+
 									//'<li>&Uacute;ltima connexi&oacute;: <b>' + humanMillis(usuari.latest_assoc_time) + '</b></li>'+
 									'<li>&Uacute;ltima activitat fa: <b>' + segonsDesde(usuari.last_seen) + ' segons</b></li>'+
-									
-								'</ul></p>'+
-							'</div><div>'+
-								'<h2><ul>' +				
+								'</ul>'+
+								'<ul>' +				
 									'<li>Baixat: <b>' + humanFileSize(usuari.tx_bytes,false) + '</b></li>' +
 									'<li>Pujat: <b>' + humanFileSize(usuari.rx_bytes,false)+ '</b></li>' +
-								'</ul></h2>'+
-							'</div>'+
-					 '</div>';
+								'</ul></div>'
+		marker.detailText = content;
+		marker.normalText = etiqueta;
+		marker.showDetailText = false;
+		markerContent.innerHTML = content;
 		
 		//var infowindow = new google.maps.InfoWindow()
 //
