@@ -188,15 +188,15 @@ function afegirAPs(objAPs, map){
 							'<div>'+
 								'<p><ul>' +
 									'<li>MAC: <b>' + ap.mac + '</b></li>'+
-									'<li>Velocitat: <b>' + ap.uplink.speed + '</b></li>'+
-									'<li>ip: <b>' + ap.config_network.ip + '</b> (' + ap.config_network.type + ') </li>'+
-									'<li>mascara: ' +  ap.config_network.netmask + '</li>'+
+									'<li>Uplink speed: <b>' + ap.uplink.speed + '</b></li>'+
+									'<li>IP: <b>' + ap.config_network.ip + '</b> (' + ap.config_network.type + ') </li>'+
+									'<li>Mask: ' +  ap.config_network.netmask + '</li>'+
 									'<li>Gateway: ' + ap.config_network.gateway + '</li>'+
 									'<li>DNS: ' + ap.config_network.dns1 + '</li>'+
 								'</ul></p>'+
 							'</div><div>'+
 								'<h2><ul>' +				
-									'<li>Estacions: <b>' + ap.num_sta + '</b></li>' +								
+									'<li>Cleints: <b>' + ap.num_sta + '</b></li>' +								
 									'<li>RX: <b>' + humanFileSize(ap.rx_bytes,false) + '</b></li>' +
 									'<li>TX: <b>' + humanFileSize(ap.tx_bytes,false)+ '</b></li>' +
 								'</ul></h2>'+
@@ -313,7 +313,9 @@ function afegirUsuaris(objUsuaris, APs, map){
 			elem = elem.parentNode;
 		}
 		console.log(elem);
-		elem.childNodes[1].style.display = elem.childNodes[1].style.display === "none" ? "block" : "none"
+		elem.width = "fit-content";
+		elem.childNodes[1].style.display = elem.childNodes[1].style.display === "none" ? "block" : "none";
+
 	}, marker);
 
 	marker.custom_data = usuari;
@@ -342,22 +344,22 @@ function afegirUsuaris(objUsuaris, APs, map){
 		if(usuari.hasOwnProperty('1x_identity')) nomPersonalitzat += '<li>Username: <b>' + usuari['1x_identity'] + '</b></li>';
 		if(usuari.hasOwnProperty('name') && usuari.name.trim() != "") nomPersonalitzat += '<li>Nom: <b>' + usuari['name'] + '</b></li>';
 		var content = etiqueta +	'<div class="toggleContent" style="display: none;"><ul>' + nomPersonalitzat +
-									'<li>Nom de host: <b>' + usuari.hostname + '</b></li>'+
-									'<li>Dispositiu: <b>' + usuari.oui +' </b></li>'+
+									'<li>Hostname: <b>' + usuari.hostname + '</b></li>'+
+									'<li>Manufacturer: <b>' + usuari.oui +' </b></li>'+
 									'<li>Ip: <b>' +  usuari.ip + '</b></li>'+
 									'<li>MAC: <b>' + usuari.mac + '</b></li>'+
 									'<li>AP: <b>' + AP.custom_data.name + '</b></li>'+
 									'<li>SSID: <b>' + usuari.essid + '</b></li>'+
-									'<li>Canal: <b>' + usuari.channel + ' ('+ usuari['radio'] +')</b></li>'+
-									'<li>Senyal: <b>' + usuari.signal + 'dB '+ senyal2Qualitat(usuari.signal) +'%</b></li>'+
-									'<li>Primera connexi&oacute;: <b>' + humanMillis(usuari.first_seen) + '</b></li>'+
-									'<li>Connexi&oacute; actual: <b>' + humanMillis(usuari.assoc_time) + '</b></li>'+
+									'<li>Channel: <b>' + usuari.channel + ' ('+ usuari['radio'] +')</b></li>'+
+									'<li>Signal strength: <b>' + usuari.signal + 'dB '+ senyal2Qualitat(usuari.signal) +'%</b></li>'+
+									'<li>First seen: <b>' + humanMillis(usuari.first_seen) + '</b></li>'+
+									'<li>Connection time: <b>' + humanMillis(usuari.assoc_time) + '</b></li>'+
 									//'<li>&Uacute;ltima connexi&oacute;: <b>' + humanMillis(usuari.latest_assoc_time) + '</b></li>'+
-									'<li>&Uacute;ltima activitat fa: <b>' + segonsDesde(usuari.last_seen) + ' segons</b></li>'+
+									'<li>Last seen: <b>' + segonsDesde(usuari.last_seen) + ' sec</b></li>'+
 								'</ul>'+
 								'<ul>' +				
-									'<li>Baixat: <b>' + humanFileSize(usuari.tx_bytes,false) + '</b></li>' +
-									'<li>Pujat: <b>' + humanFileSize(usuari.rx_bytes,false)+ '</b></li>' +
+									'<li>RX: <b>' + humanFileSize(usuari.tx_bytes,false) + '</b></li>' +
+									'<li>TX: <b>' + humanFileSize(usuari.rx_bytes,false)+ '</b></li>' +
 								'</ul></div>'
 		marker.detailText = content;
 		marker.normalText = etiqueta;
